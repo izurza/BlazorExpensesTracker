@@ -1,0 +1,71 @@
+﻿@page "/chart"
+@using Interfaces
+@using ChartJs.Blazor.Charts;
+@using ChartJs.Blazor.ChartJS.Common.Properties;
+@using ChartJs.Blazor.Util;
+@using ChartJs.Blazor.ChartJS.PieChart;
+@inject IExpenseService ExpenseService
+@using Model 
+
+<h3>PieChart</h3>
+<p>@Message</p>
+
+@if (expenses == null)
+{
+	<p><em>Loaading...</em></p>
+}
+else
+{
+	<ChartJsPieChart @ref="_pieChartJs" config="@_config" Width="600" Height="300"></ChartJsPieChart>
+}
+
+@code {
+	public IEnumerable<Expense> expenses { get; set; }
+	public string Message { get; set; }
+
+	private PieConfig _config;
+	private ChartJsPieChart _pieChartJs;
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			expenses = await ExpenseService.GetAllExpenses();
+		}
+		catch(Exception e)
+		{
+			Message = "Something went wrong.." + e.Message;
+		}
+
+		_config = new PieConfig
+		{
+				Options = new PieOptions
+				{
+					Title = new OptionsTitle
+					{
+						Display = true,
+						Text = "Expenses"
+					},
+					Responsive = true,
+					Animation = new ArcAnimation
+					{
+						AnimateRotate = true,
+						AnimateScale = true
+					}
+				}
+		};
+		_config.Data.Labels.AddRange(expenses.Select(c => c.category.Name).Distinct().ToArray());
+		var pieSet = new PieDataset
+			{
+				BackgroundColor = new[] { ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString() },
+				BorderWidth = 0,
+				HoverBackgroundColor = ColorUtil.RandomColorString(),
+				HoverBorderColor = ColorUtil.RandomColorString(),
+				HoverBorderWidth = 1,
+				BorderColor = "#ffffff"
+			};
+
+		pieSet.Data.AddRange(expenses.GroupBy(e => e.CategoryId).Select(ec => ec.Sum(c => Convert.ToDouble(c.Amount))).ToArray());
+		_config.Data.Datasets.Add(pieSet);
+	}
+}

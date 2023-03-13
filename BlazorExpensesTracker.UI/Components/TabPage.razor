@@ -1,0 +1,32 @@
+﻿
+@if(Parent.ActivePage == this)
+{
+	@ChildContent
+}
+
+
+@code {
+	[CascadingParameter]
+	private TabControl Parent { get; set; }
+
+	[Parameter]
+	public RenderFragment ChildContent { get; set;}
+
+	[Parameter]
+	public string Text { get; set; }
+
+	[Parameter]
+	public string ImageSource { get; set; }
+
+	protected override Task OnInitializedAsync()
+	{
+		if (Parent == null)
+			throw new ArgumentNullException(nameof(Parent), "Any Tabpage must have a Parent TabControl");
+
+
+		Parent.AddPage(this);
+
+
+		return base.OnInitializedAsync();
+	}
+}

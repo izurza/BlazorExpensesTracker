@@ -1,0 +1,40 @@
+﻿@page "/expensetracker"
+@using BlazorExpensesTracker.UI.Components
+@using Model
+@implements IDisposable
+
+<h3>ExpenseTracker</h3>
+<CascadingValue Value="expense">
+<TabControl>
+	<TabTitle>
+		<img src="images/@(context.ImageSource).png"/>
+		@context.Text
+	</TabTitle>
+	<ChildContent>
+		<TabPage Text="Expense" ImageSource="minus">
+			<ExpenseDetails ExpenseType="@Model.ExpenseType.Expense"></ExpenseDetails>
+		</TabPage>
+		<TabPage Text="Income" ImageSource="plus">
+			<ExpenseDetails ExpenseType="@Model.ExpenseType.Income"></ExpenseDetails>
+		</TabPage>
+	</ChildContent>
+</TabControl>
+
+<ExpenseHistory></ExpenseHistory>
+</CascadingValue>
+@code {
+	public Expense expense;
+
+	protected override Task OnInitializedAsync()
+	{
+		expense = new Expense();
+		expense.OnSelectedExpenseChanged += StateHasChanged;
+		return base.OnInitializedAsync();
+	}
+
+	public void Dispose()
+	{
+		expense.OnSelectedExpenseChanged -= StateHasChanged;
+	}
+
+}

@@ -1,0 +1,79 @@
+﻿@page "/deletecategory/{id:int}"
+
+@using Model
+@using Interfaces
+@inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
+
+
+<div class="modal" tabindex="-1" style="display:block" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1>CategoryDetails</h1>
+			</div>
+			<div class="modal-body">
+				<EditForm Model="@category" OnValidSubmit="Delete">
+					<DataAnnotationsValidator />
+					@*<ValidationSummary/>*@
+					<table class="table">
+						<tr>
+							<td>Name</td>
+							<td><input type="text" @bind="category.Name" /> </td>
+						</tr>
+						<tr>
+							<td colspan="2"><ValidationMessage For="@(() => category.Name)" /></td>
+						</tr>
+						<tr>
+							<td colspan="2" style="text-align:center">
+								<input type="submit" value="Yes" />
+								<input type="button" value="No" @onclick="NavigateToCategories" />
+							</td>
+						</tr>
+					</table>
+
+				</EditForm>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+@code {
+
+	[Parameter]
+	public int id { get; set; }
+
+	Category category = new Category();
+
+	protected override async Task OnInitializedAsync()
+	{
+		//NavigationManager.LocationChanged += LocationChanged;
+
+		if (id > 0)
+			category = await CategoryService.GetCategoryDetails(id);
+		else
+			NavigateToCategories();
+
+	}
+
+	/*protected void LocationChanged(object sender, LocationChangedEventArgs e)
+	{
+		string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "Code";
+		if (navigationMethod=="HTML")
+		{
+			NavigateToCategories();
+		}
+	}*/
+
+	protected async Task Delete()
+	{
+		await CategoryService.DeleteCategory(id);
+		NavigateToCategories();
+	}
+
+	public void NavigateToCategories() => NavigationManager.NavigateTo("/categories");
+
+
+}

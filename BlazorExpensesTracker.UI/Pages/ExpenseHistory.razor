@@ -1,0 +1,67 @@
+﻿@using Interfaces
+@using Model
+@inject IExpenseService ExpenseService
+
+<h1>History</h1>
+
+<p>@Message</p>
+
+@if (expenses == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<table class="table table-bordered table-light table-hover">
+		<thead>
+			<th>Amount</th>
+			<th>Category</th>
+			<th>Date</th>
+		</thead>
+		<tbody>
+			@foreach(var expense in expenses)
+			{
+				<tr @onclick="(()=>SelectedExpenseChange(expense.Id))">
+					<td style="@GetTextColor(expense.Id)">@expense.Amount</td>
+					<td>@expense.category.Name</td>
+					<td>@expense.TransactionDate.ToString("dd-MM-yyyy")</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+
+
+	public IEnumerable<Expense> expenses { get; set; }
+
+	public string Message { get; set; }
+
+	[CascadingParameter] protected Expense SelectedExpense { get; set; }
+
+	protected async Task SelectedExpenseChange(int expenseId)
+	{
+		var expense = await ExpenseService.GetExpenseDetails(expenseId);
+		SelectedExpense.SelectedExpenseChanged(expense);
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		try
+		{
+			expenses = await ExpenseService.GetAllExpenses();
+		}
+		catch (Exception e)
+		{
+			Message = "Something went wrong" + e.Message;
+		}
+	}
+
+	protected string GetTextColor(int expenseId)
+	{
+		var exp = expenses.FirstOrDefault(e => e.Id == expenseId);
+
+		return exp.ExpenseType == ExpenseType.Income ? "color:green" : "color:red";
+	}
+}
